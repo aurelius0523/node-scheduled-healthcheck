@@ -2,7 +2,7 @@
   "name": "node-scheduled-healthcheck",
   "version": "1.0.0",
   "description": "Simple healthchecking with cron node",
-  "main": "index.js",
+  "main": "src/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -10,16 +10,14 @@
     "type": "git",
     "url": "git+https://gitlab.com/aurelius0523/node-scheduled-healthcheck.git"
   },
-  "keywords": [
-    "node",
-    "healthcheck"
-  ],
+  "keywords": ["node", "healthcheck"],
   "author": "aurelius0523/kim.loong.tan",
   "license": "ISC",
   "bugs": {
     "url": "https://gitlab.com/aurelius0523/node-scheduled-healthcheck/issues"
   },
-  "homepage": "https://gitlab.com/aurelius0523/node-scheduled-healthcheck#README",
+  "homepage":
+    "https://gitlab.com/aurelius0523/node-scheduled-healthcheck#README",
   "dependencies": {
     "node-cron": "^1.2.1",
     "npm": "^6.0.1"
