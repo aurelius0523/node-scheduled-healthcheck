@@ -9,7 +9,7 @@ services.map(service => {
   putUrlInMap(service.url);
 });
 
-cron.schedule('* * * * * *', () => {
+cron.schedule('* * * * *', () => {
   services.map(service => {
     fetch(service.url, {
       method: service.method,
