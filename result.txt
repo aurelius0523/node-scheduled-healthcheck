@@ -1,0 +1,7 @@
+Date started: Wed May 16 2018 02:34:17 GMT+0800 (Malay Peninsula Standard Time)
+
+https://api.github.com/users/github : {
+  "successfulMinutes": 0,
+  "failedMinutes": 6
+}
+
