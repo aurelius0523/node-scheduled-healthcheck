@@ -2,27 +2,30 @@
   "name": "node-scheduled-healthcheck",
   "version": "1.0.0",
   "description": "Simple healthchecking with cron node",
-  "main": "src/index.js",
+  "main": "src/healthChecker.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "compile": "babel --presets env -d dist/ src/",
-    "start": "npm run compile && node dist/index.js",
-    "debug": "node --nolazy --inspect-brk=9229 dist/index.js"
+    "start": "npm run compile && node dist/healthChecker.js",
+    "debug": "node --nolazy --inspect-brk=9229 dist/healthChecker.js"
   },
   "repository": {
     "type": "git",
     "url": "git+https://gitlab.com/aurelius0523/node-scheduled-healthcheck.git"
   },
-  "keywords": ["node", "healthcheck"],
+  "keywords": [
+    "node",
+    "healthcheck"
+  ],
   "author": "aurelius0523/kim.loong.tan",
   "license": "ISC",
   "bugs": {
     "url": "https://gitlab.com/aurelius0523/node-scheduled-healthcheck/issues"
   },
-  "homepage":
-    "https://gitlab.com/aurelius0523/node-scheduled-healthcheck#README",
+  "homepage": "https://gitlab.com/aurelius0523/node-scheduled-healthcheck#README",
   "dependencies": {
     "js-base64": "^2.4.3",
+    "lodash": "^4.17.10",
     "node-cron": "^1.2.1",
     "node-fetch": "^2.1.2",
     "npm": "^6.0.1"

@@ -1,7 +1,13 @@
-Started at: Wed May 16 2018 18:24:41 GMT+0800 (Malay Peninsula Standard Time)
+Started at: Wed May 16 2018 21:55:12 GMT+0800 (Malay Peninsula Standard Time)
 
-https://blis-sl-rd-app.unibanka.lv:9443/LVLifeServices/customer/basic : {
+https://api.github.com/users/github : {
   "successfulMinutes": 0,
-  "failedMinutes": 0
+  "failedMinutes": 7,
+  "failMessages": [
+    "Http status returned for https://api.github.com/users/github is 401"
+  ]
 }
+
+total uptime (in hours) : 0.00
+total downtime (in hours) : 0.12
 
