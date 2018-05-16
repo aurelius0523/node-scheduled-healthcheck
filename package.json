@@ -4,7 +4,7 @@
   "description": "Simple healthchecking with cron node",
   "main": "src/healthChecker.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "mocha --require babel-register",
     "compile": "babel --presets env -d dist/ src/",
     "start": "npm run compile && node dist/healthChecker.js",
     "debug": "node --nolazy --inspect-brk=9229 dist/healthChecker.js"
@@ -24,6 +24,7 @@
   },
   "homepage": "https://gitlab.com/aurelius0523/node-scheduled-healthcheck#README",
   "dependencies": {
+    "babel-core": "^6.26.3",
     "js-base64": "^2.4.3",
     "lodash": "^4.17.10",
     "node-cron": "^1.2.1",
@@ -33,6 +34,7 @@
   "devDependencies": {
     "babel-cli": "^6.26.0",
     "babel-preset-env": "^1.7.0",
+    "babel-register": "^6.26.0",
     "chai": "^4.1.2",
     "mocha": "^5.1.1"
   }

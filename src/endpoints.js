@@ -18,5 +18,10 @@ function encodeBase64() {
 }
 
 function validIfResponseBodyHasAvatarUrl(json) {
-  return JSON.stringify(json).includes('avatar_url');
+  return json.hasOwnProperty('avatar_url');
 }
+
+export default {
+  validIfResponseBodyHasAvatarUrl,
+  encodeBase64
+};
