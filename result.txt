@@ -1,7 +1,7 @@
-Date started: Wed May 16 2018 02:34:17 GMT+0800 (Malay Peninsula Standard Time)
+Started at: Wed May 16 2018 18:24:41 GMT+0800 (Malay Peninsula Standard Time)
 
-https://api.github.com/users/github : {
+https://blis-sl-rd-app.unibanka.lv:9443/LVLifeServices/customer/basic : {
   "successfulMinutes": 0,
-  "failedMinutes": 6
+  "failedMinutes": 0
 }
 
