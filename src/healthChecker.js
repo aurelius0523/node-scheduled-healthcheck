@@ -8,7 +8,7 @@ import _ from 'lodash';
 let urlToHealthStatus = new Map();
 const cronStartDate = new Date();
 
-cron.schedule('* * * * *', () => {
+cron.schedule('* * * * * *', () => {
   services.map(service => {
     putUrlInMap(service.url);
     fetch(service.url, {
@@ -24,8 +24,8 @@ cron.schedule('* * * * *', () => {
       .then(isValid => {
         let healthStatus = urlToHealthStatus.get(service.url);
         isValid
-          ? (healthStatus.successfulMinutes += 1)
-          : ((healthStatus.failedMinutes += 1),
+          ? (healthStatus.uptime += 1)
+          : ((healthStatus.downtime += 1),
             healthStatus.failMessages.add(
               'successCriteriaCallback validation failed'
             ));
@@ -33,12 +33,12 @@ cron.schedule('* * * * *', () => {
       })
       .catch(e => {
         let healthStatus = urlToHealthStatus.get(service.url);
-        healthStatus.failedMinutes += 1;
+        healthStatus.downtime += 1;
         healthStatus.failMessages.add(e.message);
         urlToHealthStatus.set(service.url, healthStatus);
-      });
+      })
+      .then(writeResultToFile(urlToHealthStatus));
   });
-  writeResultToFile(urlToHealthStatus);
 });
 
 function isHttpStatusValid(url, res) {
@@ -67,25 +67,26 @@ function writeResultToFile(urlToHealthStatus) {
     let healthStatus = JSON.stringify(value, null, 2);
 
     stringToWrite += `${key} : ${healthStatus}\n\ntotal uptime (in hours) : ${(
-      Number.parseInt(value.successfulMinutes) / 60
+      Number.parseInt(value.uptime) / 60
     ).toFixed(2)}\ntotal downtime (in hours) : ${(
-      Number.parseInt(value.failedMinutes) / 60
+      Number.parseInt(value.downtime) / 60
     ).toFixed(2)}\n\n`;
   });
 
-  fs.writeFile('./result.txt', stringToWrite, { flag: 'w' }, function(err) {
-    if (err) {
-      return console.error(err);
-    }
+  stringToWrite += `Ended at: ${new Date()}`;
+
+  let fileName = `./result.${cronStartDate.toISOString().split('T')[0]}.txt`;
+  fs.writeFile(fileName, stringToWrite, { flag: 'w' }, err => {
+    return console.error(err);
   });
 }
 
 function putUrlInMap(url) {
   if (!urlToHealthStatus.get(url)) {
     urlToHealthStatus.set(url, {
-      successfulMinutes: 0,
-      failedMinutes: 0,
-      failMessages: new Set()
+      uptime: 0,
+      downtime: 0,
+      failMessages: new Map()
     });
   }
 }

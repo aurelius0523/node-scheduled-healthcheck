@@ -5,7 +5,7 @@ node_modules/
 dist/
 
 //result file
-result.txt
+result*.txt
 
 //vscode
 .vscode/
