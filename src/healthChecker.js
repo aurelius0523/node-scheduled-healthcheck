@@ -11,18 +11,22 @@ const cronStartDate = new Date();
 /**
  * Scheduler runs the job every minute from 9am to 6pm on weekdays
  */
-cron.schedule('* */1 9-18 * * 1-5', () => {
-  services.map(service => {
-    putUrlInMap(service.url);
+cron.schedule(
+  '* */1 9-18 * * 1-5',
+  () => {
+    services.map(service => {
+      putUrlInMap(service.url);
 
-    fetch(service.url, generateMeta(service))
-      .then(res => isHttpStatusValid(res))
-      .then(json => isResponseValid(json, service.successCriteriaCallback))
-      .then(result => processResult(result, urlToHealthStatus, service.url))
-      .catch(e => handleException(urlToHealthStatus, e.message, service.url))
-      .then(writeResultToFile(urlToHealthStatus));
-  });
-});
+      fetch(service.url, generateMeta(service))
+        .then(res => isHttpStatusValid(res))
+        .then(json => isResponseValid(json, service.successCriteriaCallback))
+        .then(result => processResult(result, urlToHealthStatus, service.url))
+        .catch(e => handleException(urlToHealthStatus, e.message, service.url))
+        .then(writeResultToFile(urlToHealthStatus));
+    });
+  },
+  true
+);
 
 /**
  * Service object holds the information required to make requests to an URL,
