@@ -5,7 +5,7 @@ node_modules/
 dist/
 
 //result file
-result*.txt
+health*.txt
 
 //vscode
 .vscode/

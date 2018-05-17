@@ -24,18 +24,21 @@ export const services = Object.freeze([
 A text file will be generated at the root of the application at every interval to show the outcome of the healthcheck.
 
 ```text
-Started at: Wed May 16 2018 21:55:12 GMT+0800 (Malay Peninsula Standard Time)
-
 https://api.github.com/users/github : {
-  "successfulMinutes": 0,
-  "failedMinutes": 7,
-  "failMessages": [
-    "Http status returned for https://api.github.com/users/github is 401"
+  "uptime": 0,
+  "downtime": 6,
+  "errorMessageToDowntime": [
+    [
+      "Http status returned is 401",
+      6
+    ]
   ]
 }
 
 total uptime (in hours) : 0.00
-total downtime (in hours) : 0.12
+total downtime (in hours) : 0.10
+
+Ended at: Fri May 18 2018 00:59:32 GMT+0800 (Malay Peninsula Standard Time)
 ```
 
 ## Usage

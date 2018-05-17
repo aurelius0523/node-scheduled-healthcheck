@@ -8,62 +8,149 @@ import _ from 'lodash';
 let urlToHealthStatus = new Map();
 const cronStartDate = new Date();
 
-cron.schedule('* * * * * *', () => {
+/**
+ * Scheduler runs the job every minute from 9am to 6pm on weekdays
+ */
+cron.schedule('* */1 9-18 * * 1-5', () => {
   services.map(service => {
     putUrlInMap(service.url);
-    fetch(service.url, {
-      method: service.method,
-      headers: service.headers,
-      body: service.method === ('POST' || 'PUT') ? service.requestBody : null,
-      agent: new https.Agent({
-        rejectUnauthorized: false
-      })
-    })
-      .then(res => isHttpStatusValid(service.url, res))
+
+    fetch(service.url, generateMeta(service))
+      .then(res => isHttpStatusValid(res))
       .then(json => isResponseValid(json, service.successCriteriaCallback))
-      .then(isValid => {
-        let healthStatus = urlToHealthStatus.get(service.url);
-        isValid
-          ? (healthStatus.uptime += 1)
-          : ((healthStatus.downtime += 1),
-            healthStatus.failMessages.add(
-              'successCriteriaCallback validation failed'
-            ));
-        urlToHealthStatus.set(service.url, healthStatus);
-      })
-      .catch(e => {
-        let healthStatus = urlToHealthStatus.get(service.url);
-        healthStatus.downtime += 1;
-        healthStatus.failMessages.add(e.message);
-        urlToHealthStatus.set(service.url, healthStatus);
-      })
+      .then(result => processResult(result, urlToHealthStatus, service.url))
+      .catch(e => handleException(urlToHealthStatus, e.message, service.url))
       .then(writeResultToFile(urlToHealthStatus));
   });
 });
 
-function isHttpStatusValid(url, res) {
+/**
+ * Service object holds the information required to make requests to an URL,
+ * such as headers, methods, url and requestBody
+ * @param {Object} service
+ */
+function generateMeta(service) {
+  return {
+    method: service.method,
+    headers: service.headers,
+    body: service.method === ('POST' || 'PUT') ? service.requestBody : null,
+    agent: new https.Agent({
+      rejectUnauthorized: false
+    })
+  };
+}
+
+/**
+ * Returns json if the httpStatus returned by this response is within 2xx range,
+ * throws Error otherwise
+ * @param {Object} res
+ */
+function isHttpStatusValid(res) {
   // console.log(`${url} has httpStatus ${res.status}`);
   if (!res.status.toString().match(/^2[0-9][0-9]/)) {
-    throw new Error(`Http status returned for ${url} is ${res.status}`);
+    throw new Error(`Http status returned is ${res.status}`);
   } else {
     return res.json();
   }
 }
 
+/**
+ * Evaluates if the response body (json) returned is valid using successCriteriaCallback.
+ * Any response body is considered valid if no successCriteriaCallback is passed in
+ * @param {Object} json
+ * @param {Function} successCriteriaCallback
+ */
 function isResponseValid(json, successCriteriaCallback) {
   // console.log(`${JSON.stringify(json)} is ${successCriteriaCallback(json)}`);
   if (!successCriteriaCallback) {
-    return true;
+    return {
+      isValid: true
+    };
+  } else {
+    return {
+      isValid: successCriteriaCallback(json),
+      message: json
+    };
   }
-  return successCriteriaCallback(json);
 }
 
+/**
+ * Decides whether to increase the uptime or downtime of urlToHealthStatusObject.
+ * @param {Object} urlToHealthStatus
+ * @param {String} url
+ */
+function processResult(result, urlToHealthStatus, url) {
+  let healthStatus = urlToHealthStatus.get(url);
+  if (result && result.isValid) {
+    healthStatus.uptime += 1;
+  } else {
+    healthStatus = processError(healthStatus, result.message);
+  }
+  urlToHealthStatus.set(url, healthStatus);
+
+  return urlToHealthStatus;
+}
+
+/**
+ * Calls processError function. Turned into a function to make main promise
+ * more readable
+ * @param {Object} urlToHealthStatus
+ * @param {String} message
+ * @param {String} url
+ */
+function handleException(urlToHealthStatus, message, url) {
+  let healthStatus = urlToHealthStatus.get(url);
+  urlToHealthStatus.set(url, processError(healthStatus, message));
+
+  return urlToHealthStatus;
+}
+
+/**
+ * Increases downtime in healthStatus object and calls processErrorMessageToDowntime()
+ * in order to group total downtime by error returned by response
+ * @param {Object} healthStatus
+ * @param {String} message
+ */
+function processError(healthStatus, message) {
+  let clonedHealthStatus = _.cloneDeep(healthStatus);
+  clonedHealthStatus.downtime += 1;
+  clonedHealthStatus.errorMessageToDowntime = processErrorMessageToDowntime(
+    clonedHealthStatus.errorMessageToDowntime,
+    message
+  );
+  return clonedHealthStatus;
+}
+
+/**
+ * Counts the downtime of each error message and store it in a map.
+ * Error message will be the key while the total downtime will
+ * be the value
+ * @param {Map} errorMessageToDowntime
+ * @param {String} errorMessage
+ */
+function processErrorMessageToDowntime(errorMessageToDowntime, errorMessage) {
+  let clonedErrorMessageToDowntime = _.cloneDeep(errorMessageToDowntime);
+  let downtime = clonedErrorMessageToDowntime.get(errorMessage);
+  if (!downtime) {
+    clonedErrorMessageToDowntime.set(errorMessage, 1);
+  } else {
+    clonedErrorMessageToDowntime.set(errorMessage, downtime + 1);
+  }
+  return clonedErrorMessageToDowntime;
+}
+
+/**
+ * Writes the result of the health check into a file at directory root.
+ * If file is not present, a text file with name health.[yyyy-mm-dd].txt will
+ * be created. The file is recreated on each cron trigger.
+ * @param {Map} urlToHealthStatus
+ */
 function writeResultToFile(urlToHealthStatus) {
   let clonedUrlToHealthStatus = _.cloneDeep(urlToHealthStatus);
   let stringToWrite = `Started at: ${cronStartDate}\n\n`;
 
   clonedUrlToHealthStatus.forEach((value, key, map) => {
-    value.failMessages = [...value.failMessages];
+    value.errorMessageToDowntime = [...value.errorMessageToDowntime];
     let healthStatus = JSON.stringify(value, null, 2);
 
     stringToWrite += `${key} : ${healthStatus}\n\ntotal uptime (in hours) : ${(
@@ -75,18 +162,24 @@ function writeResultToFile(urlToHealthStatus) {
 
   stringToWrite += `Ended at: ${new Date()}`;
 
-  let fileName = `./result.${cronStartDate.toISOString().split('T')[0]}.txt`;
+  let fileName = `./health.${cronStartDate.toISOString().split('T')[0]}.txt`;
   fs.writeFile(fileName, stringToWrite, { flag: 'w' }, err => {
-    return console.error(err);
+    if (err) console.error(err);
   });
 }
 
+/**
+ * Adds key and value to a global Map that is used to keep track of this job.
+ * Map(url, healthStatus) which means healthStatus of every url will be kept track
+ * in this map
+ * @param {String} url
+ */
 function putUrlInMap(url) {
   if (!urlToHealthStatus.get(url)) {
     urlToHealthStatus.set(url, {
       uptime: 0,
       downtime: 0,
-      failMessages: new Map()
+      errorMessageToDowntime: new Map()
     });
   }
 }
