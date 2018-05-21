@@ -1,9 +1,10 @@
-import cron from 'node-cron';
-import fetch from 'node-fetch';
-import { services } from './endpoints';
 import fs from 'fs';
 import https from 'https';
 import _ from 'lodash';
+import cron from 'node-cron';
+import fetch from 'node-fetch';
+import { services } from './endpoints';
+const io = require('socket.io')().listen(5453);
 
 let urlToHealthStatus = new Map();
 const cronStartDate = new Date();
@@ -22,7 +23,9 @@ cron.schedule(
         .then(json => isResponseValid(json, service.successCriteriaCallback))
         .then(result => processResult(result, urlToHealthStatus, service.url))
         .catch(e => handleException(urlToHealthStatus, e.message, service.url))
-        .then(writeResultToFile(urlToHealthStatus));
+        .then(writeResultToFile(urlToHealthStatus))
+        .then(urlToHealthStatus => convertToResponse(urlToHealthStatus))
+        .then(response => sendMessage('healthcheck', response));
     });
   },
   true
@@ -170,6 +173,8 @@ function writeResultToFile(urlToHealthStatus) {
   fs.writeFile(fileName, stringToWrite, { flag: 'w' }, err => {
     if (err) console.error(err);
   });
+
+  return clonedUrlToHealthStatus;
 }
 
 /**
@@ -186,4 +191,45 @@ function putUrlInMap(url) {
       errorMessageToDowntime: new Map()
     });
   }
+}
+
+/**
+ * Converts urlToHealthCheck into a more meaningful format for client
+ * consumption. This method needs to be modified if any field in
+ * urlToHealthCheck status is changed
+ * @param {Object} obj
+ */
+function convertToResponse(obj) {
+  const clonedObj = _.cloneDeep(obj);
+  const response = {
+    urls: []
+  };
+
+  obj.forEach((value, key) => {
+    const clonedHealthCheckModel = {};
+    clonedHealthCheckModel.url = key;
+    clonedHealthCheckModel.uptime = value.uptime;
+    clonedHealthCheckModel.downtime = value.downtime;
+
+    const errorMessageToDowntimeArray = [];
+    value.errorMessageToDowntime.forEach((value, key) => {
+      const clonedErrorMessageToDowntimeModel = {};
+      clonedErrorMessageToDowntimeModel.message = key;
+      clonedErrorMessageToDowntimeModel.downtime = value;
+      errorMessageToDowntimeArray.push(clonedErrorMessageToDowntimeModel);
+    });
+    clonedHealthCheckModel.errorMessageToDowntime = errorMessageToDowntimeArray;
+    response.urls.push(clonedHealthCheckModel);
+  });
+
+  return JSON.stringify(response);
+}
+
+/**
+ * Emits message to a particular event
+ * @param {String} response
+ */
+function sendMessage(event, response) {
+  console.log(JSON.stringify(response));
+  io.emit(event, response);
 }
