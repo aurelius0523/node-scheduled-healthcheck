@@ -12,14 +12,20 @@ const cronStartDate = new Date();
  * Scheduler runs the job every minute from 9am to 6pm on weekdays
  */
 cron.schedule(
-  '* */1 9-18 * * 1-5',
+  '*/1 9-18 * * 1-5',
   () => {
     services.map(service => {
       putUrlInMap(service.url);
 
       fetch(service.url, generateMeta(service))
         .then(res => isHttpStatusValid(res))
-        .then(json => isResponseValid(json, service.successCriteriaCallback))
+        .then(json =>
+          isResponseValid(
+            json,
+            service.successCriteriaCallback,
+            service.errorMessageParserCallback
+          )
+        )
         .then(result => processResult(result, urlToHealthStatus, service.url))
         .catch(e => handleException(urlToHealthStatus, e.message, service.url))
         .then(writeResultToFile(urlToHealthStatus));
@@ -64,16 +70,24 @@ function isHttpStatusValid(res) {
  * @param {Object} json
  * @param {Function} successCriteriaCallback
  */
-function isResponseValid(json, successCriteriaCallback) {
+function isResponseValid(
+  json,
+  successCriteriaCallback,
+  errorMessageParserCallback
+) {
   // console.log(`${JSON.stringify(json)} is ${successCriteriaCallback(json)}`);
   if (!successCriteriaCallback) {
     return {
       isValid: true
     };
   } else {
+    let isValid = successCriteriaCallback(json);
     return {
-      isValid: successCriteriaCallback(json),
-      message: json
+      isValid: isValid,
+      message:
+        !isValid && errorMessageParserCallback
+          ? errorMessageParserCallback(json)
+          : json
     };
   }
 }

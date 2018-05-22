@@ -1,0 +1,26 @@
+Started at: Thu May 17 2018 09:59:00 GMT+0800 (Malay Peninsula Standard Time)
+
+https://blis-sl-rd-app.unibanka.lv:9443/LVLifeServices/customer/basic : {
+  "successfulMinutes": 1228,
+  "failedMinutes": 186,
+  "failMessages": [
+    "successCriteriaCallback validation failed",
+    "request to https://blis-sl-rd-app.unibanka.lv:9443/LVLifeServices/customer/basic failed, reason: connect ECONNREFUSED 10.151.198.27:9443"
+  ]
+}
+
+total uptime (in hours) : 20.47
+total downtime (in hours) : 3.10
+
+https://blis.ut.int.vb.lt/LTLifeServices/customer/basic : {
+  "successfulMinutes": 919,
+  "failedMinutes": 496,
+  "failMessages": [
+    "successCriteriaCallback validation failed",
+    "request to https://blis.ut.int.vb.lt/LTLifeServices/customer/basic failed, reason: read ECONNRESET"
+  ]
+}
+
+total uptime (in hours) : 15.32
+total downtime (in hours) : 8.27
+
