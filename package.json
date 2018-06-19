@@ -4,7 +4,7 @@
   "description": "Simple healthchecking with cron node",
   "main": "src/healthChecker.js",
   "scripts": {
-    "test": "mocha --require babel-register",
+    "test": "mocha --require babel-register --exit",
     "compile": "babel --presets env -d dist/ src/",
     "start": "npm run compile && node dist/healthChecker.js",
     "debug": "node --nolazy --inspect-brk=9229 dist/healthChecker.js"
@@ -38,6 +38,8 @@
     "babel-preset-env": "^1.7.0",
     "babel-register": "^6.26.0",
     "chai": "^4.1.2",
-    "mocha": "^5.1.1"
+    "expect": "^23.1.0",
+    "mocha": "^5.1.1",
+    "sinon": "^6.0.0"
   }
 }

@@ -54,7 +54,7 @@ function generateMeta(service) {
  * throws Error otherwise
  * @param {Object} res
  */
-function isHttpStatusValid(res) {
+export function isHttpStatusValid(res) {
   // console.log(`${url} has httpStatus ${res.status}`);
   if (!res.status.toString().match(/^2[0-9][0-9]/)) {
     throw new Error(`Http status returned is ${res.status}`);
@@ -69,7 +69,7 @@ function isHttpStatusValid(res) {
  * @param {Object} json
  * @param {Function} successCriteriaCallback
  */
-function isResponseValid(json, successCriteriaCallback) {
+export function isResponseValid(json, successCriteriaCallback) {
   // console.log(`${JSON.stringify(json)} is ${successCriteriaCallback(json)}`);
   if (!successCriteriaCallback) {
     return {
