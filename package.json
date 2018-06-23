@@ -7,7 +7,8 @@
     "test": "mocha --require babel-register --exit",
     "compile": "babel --presets env -d dist/ src/",
     "start": "npm run compile && node dist/healthChecker.js",
-    "debug": "node --nolazy --inspect-brk=9229 dist/healthChecker.js"
+    "debug": "node --nolazy --inspect-brk=9229 dist/healthChecker.js",
+    "cover": "istanbul cover dist/healthChecker.spec.js"
   },
   "repository": {
     "type": "git",
@@ -30,6 +31,7 @@
     "node-cron": "^1.2.1",
     "node-fetch": "^2.1.2",
     "npm": "^6.0.1",
+    "should": "^13.2.1",
     "signale": "^1.0.1",
     "socket.io": "^2.1.1"
   },
@@ -40,6 +42,7 @@
     "chai": "^4.1.2",
     "expect": "^23.1.0",
     "mocha": "^5.1.1",
-    "sinon": "^6.0.0"
+    "sinon": "^6.0.0",
+    "sinon-chai": "^3.2.0"
   }
 }
