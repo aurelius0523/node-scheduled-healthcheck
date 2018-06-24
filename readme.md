@@ -2,7 +2,7 @@
 
 ## Introduction
 
-A small node utility to programatically check health status of APIs.
+A small node utility to check health status of APIs.
 
 `endpoints.js` exports `services` where services that needs to be healthchecked are defined with the following parameters. Scheduling is handled using [node-cron](https://github.com/kelektiv/node-cron/ 'Github page') and data fetching is done using [node-fetch](https://github.com/bitinn/node-fetch 'Github page')
 
@@ -50,3 +50,13 @@ npm install
 (update endpoints.js to include desired endpoints)
 npm start
 ```
+
+## Libraries Used
+
+1.  Code Coverage - Istanbul/nyc
+2.  Unit Testing - Mocha/Chai/Expect/Sinon
+3.  Fetch API - node-fetch
+4.  Scheduler - node-cron
+5.  Transpiler - babel
+6.  Socket - socket.io
+7.  Utility - lodash

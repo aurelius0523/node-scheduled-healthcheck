@@ -8,14 +8,15 @@
     "compile": "babel --presets env -d dist/ src/",
     "start": "npm run compile && node dist/healthChecker.js",
     "debug": "node --nolazy --inspect-brk=9229 dist/healthChecker.js",
-    "cover": "cross-env NODE_ENV=test nyc mocha test.js"
+    "cover": "cross-env NODE_ENV=test nyc mocha --exit test/"
   },
   "nyc": {
     "require": [
       "babel-register"
     ],
     "reporter": [
-      "text"
+      "text",
+      "html"
     ],
     "sourceMap": false,
     "instrument": false
@@ -41,8 +42,6 @@
     "node-cron": "^1.2.1",
     "node-fetch": "^2.1.2",
     "npm": "^6.0.1",
-    "should": "^13.2.1",
-    "signale": "^1.0.1",
     "socket.io": "^2.1.1"
   },
   "devDependencies": {

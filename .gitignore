@@ -12,3 +12,7 @@ health*.txt
 
 //add this later
 src/testFile.js
+
+//coverage files
+.nyc_output/
+coverage/
