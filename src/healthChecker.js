@@ -44,7 +44,7 @@ cron.schedule(
  * such as headers, methods, url and requestBody
  * @param {Object} service
  */
-function generateMeta(service) {
+export function generateMeta(service) {
   return {
     method: service.method,
     headers: service.headers,
@@ -60,7 +60,7 @@ function generateMeta(service) {
  * throws Error otherwise
  * @param {Object} res
  */
-function isHttpStatusValid(res) {
+export function isHttpStatusValid(res) {
   // console.log(`${url} has httpStatus ${res.status}`);
   if (!res.status.toString().match(/^2[0-9][0-9]/)) {
     throw new Error(`Http status returned is ${res.status}`);
@@ -102,7 +102,7 @@ function isResponseValid(
  * @param {Object} urlToHealthStatus
  * @param {String} url
  */
-function processResult(result, urlToHealthStatus, url) {
+export function processResult(result, urlToHealthStatus, url) {
   let healthStatus = urlToHealthStatus.get(url);
   if (result && result.isValid) {
     healthStatus.uptime += 1;
@@ -121,7 +121,7 @@ function processResult(result, urlToHealthStatus, url) {
  * @param {String} message
  * @param {String} url
  */
-function handleException(urlToHealthStatus, message, url) {
+export function handleException(urlToHealthStatus, message, url) {
   let healthStatus = urlToHealthStatus.get(url);
   urlToHealthStatus.set(url, processError(healthStatus, message));
 
@@ -134,7 +134,7 @@ function handleException(urlToHealthStatus, message, url) {
  * @param {Object} healthStatus
  * @param {String} message
  */
-function processError(healthStatus, message) {
+export function processError(healthStatus, message) {
   let clonedHealthStatus = _.cloneDeep(healthStatus);
   clonedHealthStatus.downtime += 1;
   clonedHealthStatus.errorMessageToDowntime = processErrorMessageToDowntime(
@@ -151,7 +151,10 @@ function processError(healthStatus, message) {
  * @param {Map} errorMessageToDowntime
  * @param {String} errorMessage
  */
-function processErrorMessageToDowntime(errorMessageToDowntime, errorMessage) {
+export function processErrorMessageToDowntime(
+  errorMessageToDowntime,
+  errorMessage
+) {
   let clonedErrorMessageToDowntime = _.cloneDeep(errorMessageToDowntime);
   let downtime = clonedErrorMessageToDowntime.get(errorMessage);
   if (!downtime) {
@@ -168,7 +171,7 @@ function processErrorMessageToDowntime(errorMessageToDowntime, errorMessage) {
  * be created. The file is recreated on each cron trigger.
  * @param {Map} urlToHealthStatus
  */
-function writeResultToFile(urlToHealthStatus) {
+export function writeResultToFile(urlToHealthStatus) {
   let clonedUrlToHealthStatus = _.cloneDeep(urlToHealthStatus);
   let stringToWrite = `Started at: ${cronStartDate}\n\n`;
 
@@ -183,9 +186,10 @@ function writeResultToFile(urlToHealthStatus) {
     ).toFixed(2)}\n\n`;
   });
 
-  stringToWrite += `Ended at: ${new Date()}`;
+  let currentTime = new Date();
+  stringToWrite += `Ended at: ${currentTime}`;
 
-  let fileName = `./health.${new Date().toISOString().split('T')[0]}.txt`;
+  let fileName = `./health.${currentTime.toISOString().split('T')[0]}.txt`;
   fs.writeFile(fileName, stringToWrite, { flag: 'w' }, err => {
     if (err) console.error(err);
   });
@@ -199,7 +203,7 @@ function writeResultToFile(urlToHealthStatus) {
  * in this map
  * @param {String} url
  */
-function putUrlInMap(url) {
+export function putUrlInMap(url) {
   if (!urlToHealthStatus.get(url)) {
     urlToHealthStatus.set(url, {
       uptime: 0,
@@ -215,7 +219,7 @@ function putUrlInMap(url) {
  * urlToHealthCheck status is changed
  * @param {Object} obj
  */
-function convertToResponse(obj) {
+export function convertToResponse(obj) {
   const clonedObj = _.cloneDeep(obj);
   const response = {
     urls: []
@@ -245,7 +249,7 @@ function convertToResponse(obj) {
  * Emits message to a particular event
  * @param {String} response
  */
-function sendMessage(event, response) {
+export function sendMessage(event, response) {
   console.log(JSON.stringify(response));
   io.emit(event, response);
 }
