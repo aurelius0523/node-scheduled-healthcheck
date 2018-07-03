@@ -7,13 +7,14 @@ import { services } from './endpoints';
 const io = require('socket.io')().listen(5453);
 
 let urlToHealthStatus = new Map();
-const cronStartDate = new Date();
+let cronStartDate = new Date();
+let activeDay = cronStartDate.getDay;
 
 /**
  * Scheduler runs the job every minute from 9am to 6pm on weekdays
  */
 cron.schedule(
-  '*/1 9-18 * * 1-5',
+  '* 9-17 * * 1-5',
   () => {
     services.map(service => {
       putUrlInMap(service.url);
@@ -31,7 +32,8 @@ cron.schedule(
         .catch(e => handleException(urlToHealthStatus, e.message, service.url))
         .then(writeResultToFile(urlToHealthStatus))
         .then(urlToHealthStatus => convertToResponse(urlToHealthStatus))
-        .then(response => sendMessage('healthcheck', response));
+        .then(response => sendMessage('healthcheck', response))
+        .then(refreshUrlToHealthStatus);
     });
   },
   true
@@ -183,7 +185,7 @@ function writeResultToFile(urlToHealthStatus) {
 
   stringToWrite += `Ended at: ${new Date()}`;
 
-  let fileName = `./health.${cronStartDate.toISOString().split('T')[0]}.txt`;
+  let fileName = `./health.${new Date().toISOString().split('T')[0]}.txt`;
   fs.writeFile(fileName, stringToWrite, { flag: 'w' }, err => {
     if (err) console.error(err);
   });
@@ -246,4 +248,19 @@ function convertToResponse(obj) {
 function sendMessage(event, response) {
   console.log(JSON.stringify(response));
   io.emit(event, response);
+}
+
+function refreshUrlToHealthStatus() {
+  if (activeDay != new Date().getDay()) {
+    urlToHealthStatus.forEach((value, key, map) => {
+      urlToHealthStatus.set(key, {
+        uptime: 0,
+        downtime: 0,
+        errorMessageToDowntime: new Map()
+      });
+    });
+    const currentTime = new Date();
+    activeDay = currentTime.getDay();
+    cronStartDate = currentTime;
+  }
 }
